@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Uploader Gateway</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; background: #f4f4f4; }
+    #log { background: #fff; padding: 1em; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h2>Uploader Gateway (Kodular → GAS)</h2>
+  <div id="log">Menunggu permintaan upload...</div>
+
+  <script>
+    async function getParams() {
+      const query = new URLSearchParams(window.location.search);
+      return {
+        action: query.get("action"),
+        FILE: query.get("FILE"),
+        NAMA_FILE: query.get("NAMA_FILE"),
+        MIMETYPE: query.get("MIMETYPE"),
+        FOLDER_ID: query.get("FOLDER_ID"),
+        secret: query.get("secret") // opsional untuk keamanan
+      };
+    }
+
+    async function forwardToGAS(params) {
+      const gasURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Ganti dengan GAS kamu
+
+      const resultArea = document.getElementById("log");
+      resultArea.innerText = "Meneruskan ke Google Apps Script...";
+
+      const formData = new URLSearchParams();
+      for (let key in params) {
+        if (params[key]) formData.append(key, params[key]);
+      }
+
+      try {
+        const response = await fetch(gasURL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formData
+        });
+
+        const text = await response.text();
+        resultArea.innerText = "Upload selesai. Balasan dari GAS:\n\n" + text;
+      } catch (err) {
+        resultArea.innerText = "Gagal upload: " + err;
+      }
+    }
+
+    (async () => {
+      const params = await getParams();
+
+      if (params.action === "upload") {
+        if (!params.FILE || !params.NAMA_FILE || !params.MIMETYPE || !params.FOLDER_ID) {
+          document.getElementById("log").innerText = "Data tidak lengkap. Upload dibatalkan.";
+        } else {
+          await forwardToGAS(params);
+        }
+      } else {
+        document.getElementById("log").innerText = "Tidak ada permintaan upload.";
+      }
+    })();
+  </script>
+</body>
+</html>
