@@ -1,74 +1,128 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Uploader Gateway</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Uploader ke Google Drive</title>
   <style>
-    body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
-    #status { background: #fff; padding: 1em; border: 1px solid #ccc; margin-top: 1em; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 2em;
+      text-align: center;
+    }
+    input[type="file"], button {
+      margin: 10px;
+    }
+    #preview {
+      display: none;
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
-  <h2>Upload Gambar ke Google Drive</h2>
+  <h2>Upload Foto ke Google Drive</h2>
 
-  <form id="uploadForm">
-    <input type="file" id="fileInput" accept="image/*" required><br><br>
-    <input type="submit" value="Upload Sekarang">
-  </form>
+  <input type="file" id="fileInput" accept="image/*" />
+  <br>
+  <img id="preview" />
+  <br>
+  <button onclick="uploadFile()">Upload</button>
 
-  <div id="status">Belum ada upload.</div>
+  <p id="status">Belum ada upload.</p>
 
   <script>
-    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
-      event.preventDefault();
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHcWl7tGF8_zjMbv2BXALHicBoGWjN4W_i8zw70q9ZYXpLBohzzcKexC_HwDpCG2-4DA/exec'; // Ganti sesuai milikmu
+    const FOLDER_ID = '1OlzYCscdRd4t-9jxMutbsjyZQeHOwiTL'; // Ganti sesuai folder tujuan
 
-      const file = document.getElementById("fileInput").files[0];
-      if (!file) {
-        document.getElementById("status").innerText = "Pilih file terlebih dahulu.";
+    const fileInput = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const statusEl = document.getElementById('status');
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+
+    async function uploadFile() {
+      if (fileInput.files.length === 0) {
+        statusEl.textContent = '❗ Silakan pilih file terlebih dahulu.';
         return;
       }
 
-      document.getElementById("status").innerText = "Mengupload...";
-
+      const file = fileInput.files[0];
       const reader = new FileReader();
-      reader.onload = async function() {
-        const base64 = reader.result.split(",")[1];
 
-        const formData = new URLSearchParams();
+      reader.onload = async function (e) {
+        const base64Data = e.target.result.split(',')[1];
+        const formData = new FormData();
+
         formData.append("action", "upload");
-        formData.append("FILE", base64);
-        formData.append("NAMA_FILE", file.name);
+        formData.append("FILE", base64Data);
         formData.append("MIMETYPE", file.type);
-        formData.append("FOLDER_ID", "1OlzYCscdRd4t-9jxMutbsjyZQeHOwiTL"); // ganti di sini!
+        formData.append("NAMA_FILE", file.name);
+        formData.append("FOLDER_ID", FOLDER_ID);
 
         try {
-          const response = await fetch("https://script.google.com/macros/s/AKfycbxHcWl7tGF8_zjMbv2BXALHicBoGWjN4W_i8zw70q9ZYXpLBohzzcKexC_HwDpCG2-4DA/exec", { // ganti di sini juga
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded"
-            },
+          statusEl.textContent = '⏳ Mengupload...';
+          const res = await fetch(SCRIPT_URL, {
+            method: 'POST',
             body: formData
           });
+          const result = await res.text();
 
-          const text = await response.text();
-          document.getElementById("status").innerText = "Upload selesai! File ID:\n" + text;
+          if (result.length === 33) {
+            statusEl.innerHTML = `✅ Upload berhasil!\nFile ID: ${result}`;
 
-          // Kirim ke Kodular (WebViewer)
-          if (window.AppInventor) {
-            window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + text);
+            // Kirim ke Kodular WebViewer jika ada
+            if (window.AppInventor) {
+              window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + result);
+            }
+
+          } else {
+            statusEl.innerHTML = `⚠️ Upload gagal!\n${result}`;
+
+            if (window.AppInventor) {
+              window.AppInventor.setWebViewString("UPLOAD_FAILED:" + result);
+            }
           }
-
         } catch (error) {
-          document.getElementById("status").innerText = "Upload gagal: " + error;
+          statusEl.textContent = '❌ Error: ' + error.message;
+
           if (window.AppInventor) {
-            window.AppInventor.setWebViewString("UPLOAD_FAILED");
+            window.AppInventor.setWebViewString("UPLOAD_ERROR:" + error.message);
           }
         }
       };
 
       reader.readAsDataURL(file);
-    });
+    }
   </script>
 </body>
 </html>
