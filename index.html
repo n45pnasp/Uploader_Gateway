@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,50 +8,51 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>Upload Foto ke Google Drive</h2>
-    <img id="preview" />
-    <div class="button-row">
-      <button onclick="document.getElementById('fileInput').click()">📷 Kamera</button>
-      <button onclick="document.getElementById('fileInput').click()">🖼️ Galeri</button>
-    </div>
-    <input type="file" id="fileInput" accept="image/*" style="display:none" />
-    <button class="upload-btn" onclick="uploadFile()">Upload</button>
-    <p id="status">Belum ada upload.</p>
+  <h2>Upload Foto ke Google Drive</h2>
+
+  <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
+  <br>
+  <div class="button-container">
+    <button onclick="triggerCamera()">Ambil Kamera</button>
+    <button onclick="triggerGallery()">Ambil Foto</button>
   </div>
+
+  <p id="status">Belum ada upload.</p>
 
   <script>
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
 
     const fileInput = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
     const statusEl = document.getElementById('status');
+
+    function triggerCamera() {
+      fileInput.removeAttribute("accept");
+      fileInput.setAttribute("accept", "image/*");
+      fileInput.setAttribute("capture", "environment");
+      fileInput.click();
+    }
+
+    function triggerGallery() {
+      fileInput.removeAttribute("capture");
+      fileInput.setAttribute("accept", "image/*");
+      fileInput.click();
+    }
 
     fileInput.addEventListener('change', () => {
       const file = fileInput.files[0];
       if (file) {
-        preview.src = URL.createObjectURL(file);
-        preview.style.display = 'block';
-      } else {
-        preview.style.display = 'none';
+        uploadFile(file);
       }
     });
 
-    async function uploadFile() {
+    async function uploadFile(file) {
       if (!window.FOLDER_ID || !window.SCRIPT_URL) {
         statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum di-set.';
         return;
       }
 
-      if (fileInput.files.length === 0) {
-        statusEl.textContent = '❗ Silakan pilih file terlebih dahulu.';
-        return;
-      }
-
-      const file = fileInput.files[0];
       const reader = new FileReader();
-
       reader.onload = async function (e) {
         const base64Data = e.target.result.split(',')[1];
         const formData = new FormData();
