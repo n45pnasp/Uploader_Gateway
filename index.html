@@ -53,8 +53,9 @@
   <p id="status">Belum ada upload.</p>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxHcWl7tGF8_zjMbv2BXALHicBoGWjN4W_i8zw70q9ZYXpLBohzzcKexC_HwDpCG2-4DA/exec'; // Ganti sesuai milikmu
-    const FOLDER_ID = '1OlzYCscdRd4t-9jxMutbsjyZQeHOwiTL'; // Ganti sesuai folder tujuan
+    // Ambil dari window jika dikirim dari Kodular, jika tidak pakai default
+    const SCRIPT_URL = window.SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxHcWl7tGF8_zjMbv2BXALHicBoGWjN4W_i8zw70q9ZYXpLBohzzcKexC_HwDpCG2-4DA/exec';
+    const FOLDER_ID = window.FOLDER_ID || '1OlzYCscdRd4t-9jxMutbsjyZQeHOwiTL';
 
     const fileInput = document.getElementById('fileInput');
     const preview = document.getElementById('preview');
@@ -100,7 +101,7 @@
           if (result.length === 33) {
             statusEl.innerHTML = `UPLOAD_SUCCESS:${result}`;
 
-            // Kirim ke Kodular WebViewer jika ada
+            // Kirim ke Kodular jika aktif
             if (window.AppInventor) {
               window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + result);
             }
