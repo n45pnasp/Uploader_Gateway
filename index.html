@@ -53,9 +53,9 @@
   <p id="status">Belum ada upload.</p>
 
   <script>
-    // Ambil dari window jika dikirim dari Kodular, jika tidak pakai default
-    const SCRIPT_URL = window.SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxHcWl7tGF8_zjMbv2BXALHicBoGWjN4W_i8zw70q9ZYXpLBohzzcKexC_HwDpCG2-4DA/exec';
-    const FOLDER_ID = window.FOLDER_ID || '1OlzYCscdRd4t-9jxMutbsjyZQeHOwiTL';
+    // Variabel ini akan diisi dari Kodular melalui Evaluate JS
+    window.FOLDER_ID = window.FOLDER_ID || null;
+    window.SCRIPT_URL = window.SCRIPT_URL || null;
 
     const fileInput = document.getElementById('fileInput');
     const preview = document.getElementById('preview');
@@ -72,6 +72,11 @@
     });
 
     async function uploadFile() {
+      if (!window.FOLDER_ID || !window.SCRIPT_URL) {
+        statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum di-set.';
+        return;
+      }
+
       if (fileInput.files.length === 0) {
         statusEl.textContent = '❗ Silakan pilih file terlebih dahulu.';
         return;
@@ -88,11 +93,11 @@
         formData.append("FILE", base64Data);
         formData.append("MIMETYPE", file.type);
         formData.append("NAMA_FILE", file.name);
-        formData.append("FOLDER_ID", FOLDER_ID);
+        formData.append("FOLDER_ID", window.FOLDER_ID);
 
         try {
           statusEl.textContent = '⏳ Mengupload...';
-          const res = await fetch(SCRIPT_URL, {
+          const res = await fetch(window.SCRIPT_URL, {
             method: 'POST',
             body: formData
           });
