@@ -114,7 +114,7 @@
             }
           }
         } catch (error) {
-          statusEl.textContent = '❌ Error: ' + error.message;
+          statusEl.textContent = 'UPLOAD_ERROR:' + error.message;
 
           if (window.AppInventor) {
             window.AppInventor.setWebViewString("UPLOAD_ERROR:" + error.message);
