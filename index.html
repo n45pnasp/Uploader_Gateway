@@ -1,17 +1,21 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Uploader ke Google Drive</title>
+  <title>UPLOAD FOTO KE SERVER</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Upload Foto ke Google Drive</h2>
+  <h2>UPLOAD FOTO KE SERVER</h2>
+
+  <!-- Gambar statis di tengah -->
+  <div class="image-wrapper">
+    <img src="upload.jpg" alt="Gambar Upload" class="static-image" />
+  </div>
 
   <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
-  <br>
+  
   <div class="button-container">
     <button onclick="triggerCamera()">Ambil Kamera</button>
     <button onclick="triggerGallery()">Ambil Foto</button>
@@ -20,8 +24,10 @@
   <p id="status">Belum ada upload.</p>
 
   <script>
+    // Variabel global dari luar, termasuk dari Kodular
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
+    window.FILE_NAME = window.FILE_NAME || null; // Nama file dipisah di sini
 
     const fileInput = document.getElementById('fileInput');
     const statusEl = document.getElementById('status');
@@ -57,10 +63,13 @@
         const base64Data = e.target.result.split(',')[1];
         const formData = new FormData();
 
+        // Gunakan window.FILE_NAME jika ada, jika tidak fallback ke file.name
+        const namaFile = window.FILE_NAME || file.name;
+
         formData.append("action", "upload");
         formData.append("FILE", base64Data);
         formData.append("MIMETYPE", file.type);
-        formData.append("NAMA_FILE", file.name);
+        formData.append("NAMA_FILE", namaFile);
         formData.append("FOLDER_ID", window.FOLDER_ID);
 
         try {
