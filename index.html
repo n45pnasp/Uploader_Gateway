@@ -98,7 +98,7 @@
           const result = await res.text();
 
           if (result.length === 33) {
-            statusEl.innerHTML = `✅ Upload berhasil!\nFile ID: ${result}`;
+            statusEl.innerHTML = `UPLOAD_SUCCESS: ${result}`;
 
             // Kirim ke Kodular WebViewer jika ada
             if (window.AppInventor) {
@@ -106,7 +106,7 @@
             }
 
           } else {
-            statusEl.innerHTML = `⚠️ Upload gagal!\n${result}`;
+            statusEl.innerHTML = `UPLOAD_FAILED:${result}`;
 
             if (window.AppInventor) {
               window.AppInventor.setWebViewString("UPLOAD_FAILED:" + result);
