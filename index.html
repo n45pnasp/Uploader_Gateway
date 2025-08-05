@@ -98,7 +98,7 @@
           const result = await res.text();
 
           if (result.length === 33) {
-            statusEl.innerHTML = `UPLOAD_SUCCESS: ${result}`;
+            statusEl.innerHTML = `UPLOAD_SUCCESS:${result}`;
 
             // Kirim ke Kodular WebViewer jika ada
             if (window.AppInventor) {
