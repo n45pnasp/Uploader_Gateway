@@ -4,56 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Uploader ke Google Drive</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      padding: 2em;
-      text-align: center;
-    }
-    input[type="file"], button {
-      margin: 10px;
-    }
-    #preview {
-      display: none;
-      max-width: 100%;
-      height: auto;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      margin-top: 15px;
-    }
-    button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background-color: #4CAF50;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    #status {
-      margin-top: 15px;
-      font-weight: bold;
-      white-space: pre-wrap;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>Upload Foto ke Google Drive</h2>
-
-  <input type="file" id="fileInput" accept="image/*" />
-  <br>
-  <img id="preview" />
-  <br>
-  <button onclick="uploadFile()">Upload</button>
-
-  <p id="status">Belum ada upload.</p>
+  <div class="container">
+    <h2>Upload Foto ke Google Drive</h2>
+    <img id="preview" />
+    <div class="button-row">
+      <button onclick="document.getElementById('fileInput').click()">📷 Kamera</button>
+      <button onclick="document.getElementById('fileInput').click()">🖼️ Galeri</button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none" />
+    <button class="upload-btn" onclick="uploadFile()">Upload</button>
+    <p id="status">Belum ada upload.</p>
+  </div>
 
   <script>
-    // Variabel ini akan diisi dari Kodular melalui Evaluate JS
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
 
@@ -105,22 +71,17 @@
 
           if (result.length === 33) {
             statusEl.innerHTML = `UPLOAD_SUCCESS:${result}`;
-
-            // Kirim ke Kodular jika aktif
             if (window.AppInventor) {
               window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + result);
             }
-
           } else {
             statusEl.innerHTML = `UPLOAD_FAILED:${result}`;
-
             if (window.AppInventor) {
               window.AppInventor.setWebViewString("UPLOAD_FAILED:" + result);
             }
           }
         } catch (error) {
           statusEl.textContent = 'UPLOAD_ERROR:' + error.message;
-
           if (window.AppInventor) {
             window.AppInventor.setWebViewString("UPLOAD_ERROR:" + error.message);
           }
