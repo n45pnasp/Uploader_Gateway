@@ -5,67 +5,70 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Uploader Gateway</title>
   <style>
-    body { font-family: sans-serif; padding: 2em; background: #f4f4f4; }
-    #log { background: #fff; padding: 1em; border: 1px solid #ccc; }
+    body { font-family: sans-serif; padding: 2em; background: #f9f9f9; }
+    #status { background: #fff; padding: 1em; border: 1px solid #ccc; margin-top: 1em; }
   </style>
 </head>
 <body>
-  <h2>Uploader Gateway (Kodular → GAS)</h2>
-  <div id="log">Menunggu permintaan upload...</div>
+  <h2>Upload Gambar ke Google Drive</h2>
+
+  <form id="uploadForm">
+    <input type="file" id="fileInput" accept="image/*" required><br><br>
+    <input type="submit" value="Upload Sekarang">
+  </form>
+
+  <div id="status">Belum ada upload.</div>
 
   <script>
-    async function getParams() {
-      const query = new URLSearchParams(window.location.search);
-      return {
-        action: query.get("action"),
-        FILE: query.get("FILE"),
-        NAMA_FILE: query.get("NAMA_FILE"),
-        MIMETYPE: query.get("MIMETYPE"),
-        FOLDER_ID: query.get("FOLDER_ID"),
-        secret: query.get("secret") // opsional untuk keamanan
-      };
-    }
+    document.getElementById("uploadForm").addEventListener("submit", async function(event) {
+      event.preventDefault();
 
-    async function forwardToGAS(params) {
-      const gasURL = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec"; // Ganti dengan GAS kamu
-
-      const resultArea = document.getElementById("log");
-      resultArea.innerText = "Meneruskan ke Google Apps Script...";
-
-      const formData = new URLSearchParams();
-      for (let key in params) {
-        if (params[key]) formData.append(key, params[key]);
+      const file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        document.getElementById("status").innerText = "Pilih file terlebih dahulu.";
+        return;
       }
 
-      try {
-        const response = await fetch(gasURL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-          },
-          body: formData
-        });
+      document.getElementById("status").innerText = "Mengupload...";
 
-        const text = await response.text();
-        resultArea.innerText = "Upload selesai. Balasan dari GAS:\n\n" + text;
-      } catch (err) {
-        resultArea.innerText = "Gagal upload: " + err;
-      }
-    }
+      const reader = new FileReader();
+      reader.onload = async function() {
+        const base64 = reader.result.split(",")[1];
 
-    (async () => {
-      const params = await getParams();
+        const formData = new URLSearchParams();
+        formData.append("action", "upload");
+        formData.append("FILE", base64);
+        formData.append("NAMA_FILE", file.name);
+        formData.append("MIMETYPE", file.type);
+        formData.append("FOLDER_ID", "1xHK6-lKXz3isYKDJPzhMtYgaJuk8a5h9"); // ganti di sini!
 
-      if (params.action === "upload") {
-        if (!params.FILE || !params.NAMA_FILE || !params.MIMETYPE || !params.FOLDER_ID) {
-          document.getElementById("log").innerText = "Data tidak lengkap. Upload dibatalkan.";
-        } else {
-          await forwardToGAS(params);
+        try {
+          const response = await fetch("https://script.google.com/macros/s/AKfycbwrBj1En7YWsNXiAhuIhyVvVpS1hPRT17D6AShiJkF8aedDPh7fEmlQ8yDxugBG6PFx-Q/exec", { // ganti di sini juga
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData
+          });
+
+          const text = await response.text();
+          document.getElementById("status").innerText = "Upload selesai! File ID:\n" + text;
+
+          // Kirim ke Kodular (WebViewer)
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + text);
+          }
+
+        } catch (error) {
+          document.getElementById("status").innerText = "Upload gagal: " + error;
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString("UPLOAD_FAILED");
+          }
         }
-      } else {
-        document.getElementById("log").innerText = "Tidak ada permintaan upload.";
-      }
-    })();
+      };
+
+      reader.readAsDataURL(file);
+    });
   </script>
 </body>
 </html>
