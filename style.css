@@ -1,62 +1,63 @@
-
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f2f2f2;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #1e1e2f;
+  color: #f5f5f5;
   margin: 0;
   padding: 0;
-}
-
-.container {
-  padding: 1em;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 h2 {
   margin-top: 1em;
-  margin-bottom: 1em;
-  color: #333;
+  margin-bottom: 0.5em;
+  color: #ffffff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
 }
 
-#preview {
-  display: none;
-  max-width: 90%;
-  border-radius: 12px;
-  border: 1px solid #ccc;
-  margin-bottom: 1em;
-}
-
-.button-row {
+.image-wrapper {
+  margin: 20px 0;
+  width: 90%;
   display: flex;
   justify-content: center;
-  gap: 10px;
-  margin-bottom: 1em;
+}
+
+.static-image {
+  max-width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  background-color: #2b2b3c;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 1em 0;
 }
 
 button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  background-color: #6200ea;
-  color: white;
+  padding: 12px 24px;
   font-size: 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2e2e40, #1c1c2e);
+  box-shadow: 4px 4px 10px #141422,
+              -4px -4px 10px #2a2a3a;
+  color: #f0f0f0;
   cursor: pointer;
+  transition: 0.2s ease-in-out;
 }
 
 button:hover {
-  background-color: #3700b3;
-}
-
-.upload-btn {
-  margin-top: 10px;
-  background-color: #4CAF50;
-}
-
-.upload-btn:hover {
-  background-color: #388e3c;
+  background: linear-gradient(145deg, #39395b, #1a1a2a);
 }
 
 #status {
-  margin-top: 15px;
+  margin-top: 10px;
   font-weight: bold;
+  color: #a0e7a0;
+  font-size: 14px;
   white-space: pre-wrap;
 }
