@@ -14,8 +14,7 @@
     <img src="upload.jpg" alt="Gambar Upload" class="static-image" />
   </div>
 
-  <input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none" />
-  
+  <!-- Tombol kamera dan galeri -->
   <div class="button-container">
     <button onclick="triggerCamera()">Ambil Kamera</button>
     <button onclick="triggerGallery()">Ambil Foto</button>
@@ -24,34 +23,49 @@
   <p id="status">Belum ada upload.</p>
 
   <script>
-    // Variabel global dari luar, termasuk dari Kodular
+    // Konfigurasi dari Kodular
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
-    window.FILE_NAME = window.FILE_NAME || null; // Nama file dipisah di sini
+    window.FILE_NAME = window.FILE_NAME || null; // Nama file custom
 
-    const fileInput = document.getElementById('fileInput');
     const statusEl = document.getElementById('status');
 
+    // Fungsi membuka kamera langsung
     function triggerCamera() {
-      fileInput.removeAttribute("accept");
-      fileInput.setAttribute("accept", "image/*");
-      fileInput.setAttribute("capture", "environment");
-      fileInput.click();
+      const cameraInput = document.createElement('input');
+      cameraInput.type = 'file';
+      cameraInput.accept = 'image/*';
+      cameraInput.capture = 'environment';
+      cameraInput.style.display = 'none';
+
+      cameraInput.addEventListener('change', () => {
+        const file = cameraInput.files[0];
+        if (file) uploadFile(file);
+      });
+
+      document.body.appendChild(cameraInput);
+      cameraInput.click();
+      document.body.removeChild(cameraInput);
     }
 
+    // Fungsi membuka galeri
     function triggerGallery() {
-      fileInput.removeAttribute("capture");
-      fileInput.setAttribute("accept", "image/*");
-      fileInput.click();
+      const galleryInput = document.createElement('input');
+      galleryInput.type = 'file';
+      galleryInput.accept = 'image/*';
+      galleryInput.style.display = 'none';
+
+      galleryInput.addEventListener('change', () => {
+        const file = galleryInput.files[0];
+        if (file) uploadFile(file);
+      });
+
+      document.body.appendChild(galleryInput);
+      galleryInput.click();
+      document.body.removeChild(galleryInput);
     }
 
-    fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (file) {
-        uploadFile(file);
-      }
-    });
-
+    // Fungsi upload
     async function uploadFile(file) {
       if (!window.FOLDER_ID || !window.SCRIPT_URL) {
         statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum di-set.';
@@ -63,7 +77,6 @@
         const base64Data = e.target.result.split(',')[1];
         const formData = new FormData();
 
-        // Gunakan window.FILE_NAME jika ada, jika tidak fallback ke file.name
         const namaFile = window.FILE_NAME || file.name;
 
         formData.append("action", "upload");
@@ -78,6 +91,7 @@
             method: 'POST',
             body: formData
           });
+
           const result = await res.text();
 
           if (result.length === 33) {
