@@ -14,12 +14,30 @@
     <img src="upload.jpg" alt="Gambar Upload" class="static-image" />
   </div>
 
-  <!-- Tombol kamera dan galeri -->
+  <!-- Tombol menggunakan <label> agar didukung WebView -->
   <div class="button-container">
-    <button onclick="triggerCamera()">Ambil Kamera</button>
-    <button onclick="triggerGallery()">Ambil Foto</button>
+    <label for="cameraInput" class="custom-button">Ambil Kamera</label>
+    <label for="galleryInput" class="custom-button">Ambil Foto</label>
   </div>
 
+  <!-- Input file kamera -->
+  <input
+    type="file"
+    id="cameraInput"
+    accept="image/*"
+    capture="environment"
+    style="display: none"
+  />
+
+  <!-- Input file galeri -->
+  <input
+    type="file"
+    id="galleryInput"
+    accept="image/*"
+    style="display: none"
+  />
+
+  <!-- Status upload -->
   <p id="status">Belum ada upload.</p>
 
   <script>
@@ -29,43 +47,19 @@
     window.FILE_NAME = window.FILE_NAME || null; // Nama file custom
 
     const statusEl = document.getElementById('status');
+    const cameraInput = document.getElementById('cameraInput');
+    const galleryInput = document.getElementById('galleryInput');
 
-    // Fungsi membuka kamera langsung
-    function triggerCamera() {
-      const cameraInput = document.createElement('input');
-      cameraInput.type = 'file';
-      cameraInput.accept = 'image/*';
-      cameraInput.capture = 'environment';
-      cameraInput.style.display = 'none';
+    cameraInput.addEventListener('change', () => {
+      const file = cameraInput.files[0];
+      if (file) uploadFile(file);
+    });
 
-      cameraInput.addEventListener('change', () => {
-        const file = cameraInput.files[0];
-        if (file) uploadFile(file);
-      });
+    galleryInput.addEventListener('change', () => {
+      const file = galleryInput.files[0];
+      if (file) uploadFile(file);
+    });
 
-      document.body.appendChild(cameraInput);
-      cameraInput.click();
-      document.body.removeChild(cameraInput);
-    }
-
-    // Fungsi membuka galeri
-    function triggerGallery() {
-      const galleryInput = document.createElement('input');
-      galleryInput.type = 'file';
-      galleryInput.accept = 'image/*';
-      galleryInput.style.display = 'none';
-
-      galleryInput.addEventListener('change', () => {
-        const file = galleryInput.files[0];
-        if (file) uploadFile(file);
-      });
-
-      document.body.appendChild(galleryInput);
-      galleryInput.click();
-      document.body.removeChild(galleryInput);
-    }
-
-    // Fungsi upload
     async function uploadFile(file) {
       if (!window.FOLDER_ID || !window.SCRIPT_URL) {
         statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum di-set.';
