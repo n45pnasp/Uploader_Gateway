@@ -21,7 +21,6 @@
   <div id="loadingSpinner" class="spinner" style="display: none;"></div>
 
   <script>
-    // Variabel yang dikirim dari Kodular
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
     window.FILE_NAME = window.FILE_NAME || 'CTP.jpg';
@@ -30,17 +29,42 @@
     const spinner = document.getElementById('loadingSpinner');
     let lastData = "";
 
-    // Cek WebViewString setiap detik
+    // Mengecek perubahan data dari Kodular setiap detik
     setInterval(() => {
       const data = window.AppInventor?.getWebViewString?.() || "";
       if (data && data !== lastData) {
         lastData = data;
-        statusEl.textContent = "📥 Data diterima, sedang upload...";
+        statusEl.textContent = "📥 Data diterima, sedang mengompres...";
         spinner.style.display = "block";
-        uploadBase64(data, window.FILE_NAME);
+        compressBase64Image(data).then((compressed) => {
+          uploadBase64(compressed, window.FILE_NAME);
+        });
       }
     }, 1000);
 
+    // Fungsi kompresi gambar base64 menggunakan canvas
+    function compressBase64Image(base64, mimeType = "image/jpeg", quality = 0.7) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+
+          const MAX_WIDTH = 600;
+          const scaleSize = MAX_WIDTH / img.width;
+          canvas.width = MAX_WIDTH;
+          canvas.height = img.height * scaleSize;
+
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+          const compressedBase64 = canvas.toDataURL(mimeType, quality).split(',')[1];
+          resolve(compressedBase64);
+        };
+        img.src = "data:" + mimeType + ";base64," + base64;
+      });
+    }
+
+    // Fungsi untuk upload base64 ke Apps Script
     async function uploadBase64(base64Data, namaFile) {
       if (!window.FOLDER_ID || !window.SCRIPT_URL) {
         statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum diset.';
@@ -66,7 +90,6 @@
         const result = await res.text();
         spinner.style.display = 'none';
 
-        // Cek apakah result adalah ID file Google Drive (biasanya 33 karakter)
         if (result.length === 33 && /^[\w-]{33}$/.test(result)) {
           statusEl.innerHTML = `✅ File berhasil diupload.<br><strong>File ID:</strong> <code>${result}</code>`;
           if (window.AppInventor) {
