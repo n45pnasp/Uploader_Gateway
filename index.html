@@ -14,20 +14,10 @@
     <img src="upload.jpg" alt="Gambar Upload" class="static-image" />
   </div>
 
-  <!-- Tombol menggunakan <label> agar didukung WebView -->
+  <!-- Tombol menggunakan <label> agar didukung WebView Kodular -->
   <div class="button-container">
-    <label for="cameraInput" class="custom-button">Ambil Kamera</label>
     <label for="galleryInput" class="custom-button">Ambil Foto</label>
   </div>
-
-  <!-- Input file kamera -->
-  <input
-    type="file"
-    id="cameraInput"
-    accept="image/*"
-    capture="environment"
-    style="display: none"
-  />
 
   <!-- Input file galeri -->
   <input
@@ -40,20 +30,18 @@
   <!-- Status upload -->
   <p id="status">Belum ada upload.</p>
 
+  <!-- Spinner -->
+  <div id="loadingSpinner" class="spinner" style="display: none;"></div>
+
   <script>
-    // Konfigurasi dari Kodular
+    // Variabel dari Kodular (atau default null)
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
-    window.FILE_NAME = window.FILE_NAME || null; // Nama file custom
+    window.FILE_NAME = window.FILE_NAME || null;
 
     const statusEl = document.getElementById('status');
-    const cameraInput = document.getElementById('cameraInput');
     const galleryInput = document.getElementById('galleryInput');
-
-    cameraInput.addEventListener('change', () => {
-      const file = cameraInput.files[0];
-      if (file) uploadFile(file);
-    });
+    const spinner = document.getElementById('loadingSpinner');
 
     galleryInput.addEventListener('change', () => {
       const file = galleryInput.files[0];
@@ -68,9 +56,11 @@
 
       const reader = new FileReader();
       reader.onload = async function (e) {
+        statusEl.textContent = '🔄 Menyiapkan file...';
+        spinner.style.display = 'block';
+
         const base64Data = e.target.result.split(',')[1];
         const formData = new FormData();
-
         const namaFile = window.FILE_NAME || file.name;
 
         formData.append("action", "upload");
@@ -80,13 +70,14 @@
         formData.append("FOLDER_ID", window.FOLDER_ID);
 
         try {
-          statusEl.textContent = '⏳ Mengupload...';
+          statusEl.textContent = '⏳ Mengupload ke server...';
           const res = await fetch(window.SCRIPT_URL, {
             method: 'POST',
             body: formData
           });
 
           const result = await res.text();
+          spinner.style.display = 'none';
 
           if (result.length === 33) {
             statusEl.innerHTML = `UPLOAD_SUCCESS:${result}`;
