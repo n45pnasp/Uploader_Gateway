@@ -21,21 +21,21 @@
   <div id="loadingSpinner" class="spinner" style="display: none;"></div>
 
   <script>
-    // Konfigurasi bisa di-set lewat Evaluate JS dari Kodular
+    // Variabel yang dikirim dari Kodular
     window.FOLDER_ID = window.FOLDER_ID || null;
     window.SCRIPT_URL = window.SCRIPT_URL || null;
-    window.FILE_NAME = window.FILE_NAME || 'default.jpg';
+    window.FILE_NAME = window.FILE_NAME || 'CTP.jpg';
 
     const statusEl = document.getElementById('status');
     const spinner = document.getElementById('loadingSpinner');
     let lastData = "";
 
-    // Cek perubahan dari WebViewString setiap detik
+    // Cek WebViewString setiap detik
     setInterval(() => {
       const data = window.AppInventor?.getWebViewString?.() || "";
       if (data && data !== lastData) {
         lastData = data;
-        statusEl.textContent = "📥 Data baru diterima, mengunggah...";
+        statusEl.textContent = "📥 Data diterima, sedang upload...";
         spinner.style.display = "block";
         uploadBase64(data, window.FILE_NAME);
       }
@@ -43,7 +43,7 @@
 
     async function uploadBase64(base64Data, namaFile) {
       if (!window.FOLDER_ID || !window.SCRIPT_URL) {
-        statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum di-set.';
+        statusEl.textContent = '❗ FOLDER_ID atau SCRIPT_URL belum diset.';
         spinner.style.display = 'none';
         return;
       }
@@ -51,12 +51,12 @@
       const formData = new FormData();
       formData.append("action", "upload");
       formData.append("FILE", base64Data);
-      formData.append("MIMETYPE", "image/jpeg"); // Default
+      formData.append("MIMETYPE", "image/jpeg");
       formData.append("NAMA_FILE", namaFile);
       formData.append("FOLDER_ID", window.FOLDER_ID);
 
       try {
-        statusEl.textContent = '⏳ Mengupload ke server...';
+        statusEl.textContent = '⏳ Mengupload...';
 
         const res = await fetch(window.SCRIPT_URL, {
           method: 'POST',
@@ -66,22 +66,23 @@
         const result = await res.text();
         spinner.style.display = 'none';
 
-        if (result.length === 33) {
-            statusEl.innerHTML = `UPLOAD_SUCCESS:${result}`;
-            if (window.AppInventor) {
-              window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + result);
-            }
-          } else {
-            statusEl.innerHTML = `UPLOAD_FAILED:${result}`;
-            if (window.AppInventor) {
-              window.AppInventor.setWebViewString("UPLOAD_FAILED:" + result);
-            }
-          }
-        } catch (error) {
-          statusEl.textContent = 'UPLOAD_ERROR:' + error.message;
-          spinner.style.display = 'none';
+        // Cek apakah result adalah ID file Google Drive (biasanya 33 karakter)
+        if (result.length === 33 && /^[\w-]{33}$/.test(result)) {
+          statusEl.innerHTML = `✅ File berhasil diupload.<br><strong>File ID:</strong> <code>${result}</code>`;
           if (window.AppInventor) {
-            window.AppInventor.setWebViewString("UPLOAD_ERROR:" + error.message);
+            window.AppInventor.setWebViewString("UPLOAD_SUCCESS:" + result);
+          }
+        } else {
+          statusEl.innerHTML = `❌ Upload gagal: <br><code>${result}</code>`;
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString("UPLOAD_FAILED:" + result);
+          }
+        }
+      } catch (error) {
+        statusEl.textContent = '❌ UPLOAD_ERROR: ' + error.message;
+        spinner.style.display = 'none';
+        if (window.AppInventor) {
+          window.AppInventor.setWebViewString("UPLOAD_ERROR:" + error.message);
         }
       }
     }
